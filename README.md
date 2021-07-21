@@ -1,6 +1,7 @@
 # IEEE Journal Downloader
 
 * A cross-platform terminal program which tries to download every article in a specified journal and merge the documents into one **PDF** file.
+* [YouTube Demo](https://youtu.be/5HWfE48WohY)
 * Supported download domains:
     * [SciHub (Recommended, fast)](https://sci-hub.se/)
     * [LibGen (Slow)](https://libgen.is/scimag/)
@@ -36,6 +37,8 @@
 7) The merged PDF will be stored in the folder **pdf_output** relative to the program's location:
     ![done](https://i.imgur.com/FgNdTvn.png)
 
+8) Some journals, especially very recent ones, may not be available:
+    ![fail](https://i.imgur.com/R3ETv3Y.png)
 ***
 ## Background Info
 

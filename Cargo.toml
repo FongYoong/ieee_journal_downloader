@@ -1,0 +1,22 @@
+[package]
+name = "ieee_journal_downloader"
+version = "0.1.0"
+authors = ["Fong Yoong <fongyoong8@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+reqwest = { version = "0.11", features = ["json", "stream"] }
+futures-util = "0.3.15"
+tokio = { version = "1.8.1", features = ["full"] }
+scraper = "0.12.0"
+serde = { version = "1.0.126", features = ["derive"] }
+serde_json = { version = "1.0.59", features = ["alloc"] }
+tempdir = "0.3.7"
+lopdf = "0.26.0"
+human-sort = "0.2.2"
+indicatif = "0.16.2"
+clipboard = "0.5.0"
+dialoguer = "0.8.0"
+console = "0.14.1"

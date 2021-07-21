@@ -14,7 +14,8 @@ scraper = "0.12.0"
 serde = { version = "1.0.126", features = ["derive"] }
 serde_json = { version = "1.0.59", features = ["alloc"] }
 tempdir = "0.3.7"
-lopdf = "0.26.0"
+# lopdf = "0.26.0"
+lopdf = { path = "lopdf" }
 human-sort = "0.2.2"
 indicatif = "0.16.2"
 clipboard = "0.5.0"

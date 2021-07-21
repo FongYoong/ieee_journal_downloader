@@ -1,7 +1,8 @@
 use std::fs;
 use human_sort::compare;
 use std::collections::BTreeMap;
-use lopdf::{Document, Object, ObjectId};
+extern crate lopdf;
+use lopdf::{Document, Bookmark, Object, ObjectId};
 
 pub fn get_documents(directory: &std::path::Path) -> Vec<Document> {
     let mut file_paths: Vec<_> = fs::read_dir(directory).unwrap().map(|r| r.unwrap().path()).collect();
@@ -16,27 +17,33 @@ pub fn get_documents(directory: &std::path::Path) -> Vec<Document> {
 pub fn merge_documents(documents: &mut Vec<Document>, output_directory: &str, output_file_name: &str) -> bool {
     // Define a starting max_id (will be used as start index for object_ids)
     let mut max_id = 1;
+    let mut pagenum = 1;
     // Collect all Documents Objects grouped by a map
     let mut documents_pages = BTreeMap::new();
     let mut documents_objects = BTreeMap::new();
     let mut document = Document::with_version("1.5");
 
     for doc in documents {
+        let mut first = false;
         doc.renumber_objects_with(max_id);
 
         max_id = doc.max_id + 1;
 
         documents_pages.extend(
-            doc
-                    .get_pages()
-                    .into_iter()
-                    .map(|(_, object_id)| {
-                        (
-                            object_id,
-                            doc.get_object(object_id).unwrap().to_owned(),
-                        )
-                    })
-                    .collect::<BTreeMap<ObjectId, Object>>(),
+            doc.get_pages()
+                .into_iter()
+                .map(|(_, object_id)| {
+                    if !first {
+                        let bookmark =
+                            Bookmark::new(String::from(format!("Document_{}", pagenum)), [0.0, 0.0, 1.0], 0, object_id);
+                        document.add_bookmark(bookmark, None);
+                        first = true;
+                        pagenum += 1;
+                    }
+
+                    (object_id, doc.get_object(object_id).unwrap().to_owned())
+                })
+                .collect::<BTreeMap<ObjectId, Object>>(),
         );
         documents_objects.extend(doc.objects.clone());
     }
@@ -93,7 +100,8 @@ pub fn merge_documents(documents: &mut Vec<Document>, output_directory: &str, ou
 
     // If no "Pages" found abort
     if pages_object.is_none() {
-        //println!("Pages root not found.");
+        println!("Pages root not found.");
+
         return false;
     }
 
@@ -103,15 +111,14 @@ pub fn merge_documents(documents: &mut Vec<Document>, output_directory: &str, ou
             let mut dictionary = dictionary.clone();
             dictionary.set("Parent", pages_object.as_ref().unwrap().0);
 
-            document
-                    .objects
-                    .insert(*object_id, Object::Dictionary(dictionary));
+            document.objects.insert(*object_id, Object::Dictionary(dictionary));
         }
     }
 
     // If no "Catalog" found abort
     if catalog_object.is_none() {
-        //println!("Catalog root not found.");
+        println!("Catalog root not found.");
+
         return false;
     }
 
@@ -129,14 +136,12 @@ pub fn merge_documents(documents: &mut Vec<Document>, output_directory: &str, ou
         dictionary.set(
             "Kids",
             documents_pages
-                    .into_iter()
-                    .map(|(object_id, _)| Object::Reference(object_id))
-                    .collect::<Vec<_>>(),
+                .into_iter()
+                .map(|(object_id, _)| Object::Reference(object_id))
+                .collect::<Vec<_>>(),
         );
 
-        document
-                .objects
-                .insert(pages_object.0, Object::Dictionary(dictionary));
+        document.objects.insert(pages_object.0, Object::Dictionary(dictionary));
     }
 
     // Build a new "Catalog" with updated fields
@@ -146,8 +151,8 @@ pub fn merge_documents(documents: &mut Vec<Document>, output_directory: &str, ou
         dictionary.remove(b"Outlines"); // Outlines not supported in merged PDFs
 
         document
-                .objects
-                .insert(catalog_object.0, Object::Dictionary(dictionary));
+            .objects
+            .insert(catalog_object.0, Object::Dictionary(dictionary));
     }
 
     document.trailer.set("Root", catalog_object.0);
@@ -157,11 +162,24 @@ pub fn merge_documents(documents: &mut Vec<Document>, output_directory: &str, ou
 
     // Reorder all new Document objects
     document.renumber_objects();
+
+    //Set any Bookmarks to the First child if they are not set to a page
+    document.adjust_zero_pages();
+
+    //Set all bookmarks to the PDF Object tree then set the Outlines to the Bookmark content map.
+    if let Some(n) = document.build_outline() {
+        if let Ok(x) = document.get_object_mut(catalog_object.0) {
+            if let Object::Dictionary(ref mut dict) = x {
+                dict.set("Outlines", Object::Reference(n));
+            }
+        }
+    }
+
     document.compress();
     // Save the merged PDF
     match fs::create_dir_all(output_directory) {
         Err(_) => {
-            println!("Failed to create directory!")
+            panic!("Failed to create directory!")
         }
         _ => {
 

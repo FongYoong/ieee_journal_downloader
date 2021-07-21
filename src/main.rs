@@ -21,7 +21,8 @@ use std::fs::File;
 use std::io::Write;
 use futures_util::StreamExt;
 use std::cmp::min;
-use tempdir::TempDir;
+use std::fs;
+//use tempdir::TempDir;
 
 use reqwest::Url;
 use indicatif::{ProgressBar, ProgressStyle};
@@ -82,17 +83,31 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         utils::print_divider(&term);
 
         // Download PDFs
-        let temp_directory = TempDir::new("temp")?;
-        download_documents(&term, &client, &download_source, &record_store, &temp_directory).await.unwrap();
+        //let temp_directory = TempDir::new("temp")?;
+        let publication_name = &sample_record["publicationTitle"];
+        let issue_name = format!("Volume_{}_Issue_{}", sample_record["volume"], sample_record["issue"]);
+        let output_directory_name = format_json_string(&format!("pdf_output/{}/{}", publication_name, issue_name));
+        let output_file_name = format_json_string(&format!("{}.pdf", issue_name));
+        let output_separate_path_string = format!("{}/separate/", output_directory_name);
+        let output_separate_path = std::path::Path::new(output_separate_path_string.as_str());
+        match fs::create_dir_all(&output_separate_path_string) {
+            Err(_) => {
+                println!("Failed to create directory!")
+            }
+            _ => {
+    
+            }
+        };
+        download_documents(&term, &client, &download_source, &record_store, output_separate_path).await.unwrap();
 
         // Merge PDFs
         println!("{}", TermStyle("Merging Documents...").bold().yellow());
-        let mut documents = pdf_helper::get_documents(temp_directory.path());
         //let mut documents = pdf_helper::get_documents(std::path::Path::new("pdf_source"));
-        let output_directory_name = format_json_string(&format!("pdf_output/{}", sample_record["publicationTitle"]));
-        let output_file_name = format_json_string(&format!("Volume_{}_Issue_{}.pdf", sample_record["volume"], sample_record["issue"]));
+        let mut documents = pdf_helper::get_documents(output_separate_path);
+        
         // pdf_helper::merge_documents(&mut documents, &output_directory_name, &output_file_name)
         // pdf_helper::merge_documents(&mut documents, "pdf_output", "test.pdf")
+        // https://ieeexplore.ieee.org/xpl/tocresult.jsp?isnumber=9340528&punumber=8475037
         if pdf_helper::merge_documents(&mut documents, &output_directory_name, &output_file_name) {
             println!("\n{}", TermStyle("Success!").bold().green());
             println!("\n{}", TermStyle(format!("File saved to: {}/{}",
@@ -264,10 +279,10 @@ pub async fn get_record_store(client: &reqwest::Client, journal_url: &str, ieee_
     Ok(record_store)
 }
 
-pub async fn download_documents(term: &Term, client: &reqwest::Client, download_source: &DownloadSource, record_store: &RecordStore, temp_directory: &TempDir) -> Result<(), Box<dyn std::error::Error>> {
+pub async fn download_documents(term: &Term, client: &reqwest::Client, download_source: &DownloadSource, record_store: &RecordStore, temp_directory: &std::path::Path) -> Result<(), Box<dyn std::error::Error>> {
     for (index, record) in record_store.records.iter().enumerate() {
         println!("{}", TermStyle(format!("[{}/{}]", index + 1, record_store.records.len())).bold());
-        let status = get_download_url(&client, &download_source, &temp_directory.path(), &index, record).await?;
+        let status = get_download_url(&client, &download_source, &temp_directory, &index, record).await?;
         if !status {
             println!("{}", TermStyle(format!("{} Failed!", Emoji("❌", ":("))).bold().red());
         }

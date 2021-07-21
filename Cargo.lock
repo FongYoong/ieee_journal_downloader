@@ -713,8 +713,6 @@ dependencies = [
 [[package]]
 name = "lopdf"
 version = "0.26.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b49a0272112719d0037ab63d4bb67f73ba659e1e90bc38f235f163a457ac16f3"
 dependencies = [
  "chrono",
  "dtoa",
@@ -723,16 +721,10 @@ dependencies = [
  "itoa",
  "linked-hash-map",
  "log",
- "lzw",
  "pom",
  "time 0.2.27",
+ "weezl",
 ]
-
-[[package]]
-name = "lzw"
-version = "0.10.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7d947cbb889ed21c2a84be6ffbaebf5b4e0f4340638cba0444907e38b56be084"
 
 [[package]]
 name = "mac"
@@ -2005,6 +1997,12 @@ dependencies = [
  "js-sys",
  "wasm-bindgen",
 ]
+
+[[package]]
+name = "weezl"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d8b77fdfd5a253be4ab714e4ffa3c49caf146b4de743e97510c0656cf90f1e8e"
 
 [[package]]
 name = "winapi"

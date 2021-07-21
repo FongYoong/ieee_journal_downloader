@@ -267,7 +267,7 @@ pub async fn get_record_store(client: &reqwest::Client, journal_url: &str, ieee_
 pub async fn download_documents(term: &Term, client: &reqwest::Client, download_source: &DownloadSource, record_store: &RecordStore, temp_directory: &TempDir) -> Result<(), Box<dyn std::error::Error>> {
     for (index, record) in record_store.records.iter().enumerate() {
         println!("{}", TermStyle(format!("[{}/{}]", index + 1, record_store.records.len())).bold());
-        let status = get_download_url(&client, &download_source, &temp_directory.path(), &index, &record["articleTitle"].to_string(), &record["doi"].to_string()).await?;
+        let status = get_download_url(&client, &download_source, &temp_directory.path(), &index, record).await?;
         if !status {
             println!("{}", TermStyle(format!("{} Failed!", Emoji("❌", ":("))).bold().red());
         }
@@ -283,59 +283,84 @@ pub async fn download_documents(term: &Term, client: &reqwest::Client, download_
     Ok(())
 }
 
-pub async fn get_download_url(client: &reqwest::Client, download_source: &DownloadSource, temp_directory: &std::path::Path, index: &usize, title: &str, doi: &str) -> Result<bool, Box<dyn std::error::Error>> {
-    let base_url = match download_source {
-        DownloadSource::SCIHUB=>"https://sci-hub.do/",
-        DownloadSource::LIBGEN=>"http://libgen.gs/scimag/ads.php?doi="
-    };
-    let selector = match download_source {
-        DownloadSource::SCIHUB=>"iframe",
-        DownloadSource::LIBGEN=>"a"
-    };
-    let attribute = match download_source {
-        DownloadSource::SCIHUB=>"src",
-        DownloadSource::LIBGEN=>"href"
-    };
-    let download_domain = match download_source {
-        DownloadSource::SCIHUB=>"http:",
-        DownloadSource::LIBGEN=>"http://libgen.gs"
-    };
+pub async fn get_download_url(client: &reqwest::Client, download_source: &DownloadSource, temp_directory: &std::path::Path, index: &usize, record: &Value) -> Result<bool, Box<dyn std::error::Error>> {
+    let title = &record["articleTitle"].to_string();
+    let access_type = &format_json_string(&record["accessType"]["type"].to_string()); // ephemera, locked
+    println!("Downloading: {}", title);
+    match access_type.as_str() {
+        "ephemera" | "open-access" => {
+            // Free
+            let url_to_download = format_json_string(
+                &format!("https://ieeexplore.ieee.org/ielx7/{}/{}/{}.pdf",
+                &record["publicationNumber"].to_string(),
+                &record["isNumber"].to_string(),
+                &format!("0{}", record["articleNumber"].to_string()),
+            ));
+            println!("{:?} Url: {}", download_source, url_to_download);
+            println!("{}", TermStyle("Fetching free document...").bold().yellow());
+            download_url(&format!("{}.pdf", index), &url_to_download, temp_directory).await?;
+        },
+        "locked" => {
+            let base_request_url = match download_source {
+                DownloadSource::SCIHUB=>"https://sci-hub.do/",
+                DownloadSource::LIBGEN=>"http://libgen.gs/scimag/ads.php?doi="
+            };
+        
+            let selector = match download_source {
+                DownloadSource::SCIHUB=>"iframe",
+                DownloadSource::LIBGEN=>"a"
+            };
+        
+            let attribute = match download_source {
+                DownloadSource::SCIHUB=>"src",
+                DownloadSource::LIBGEN=>"href"
+            };
+        
+            let download_domain = match download_source {
+                DownloadSource::SCIHUB=>"http:",
+                DownloadSource::LIBGEN=>"http://libgen.gs"
+            };
+        
+            let formatted_link = format_json_string(&format!("{}{}", base_request_url, record["doi"].to_string()));
+            println!("{:?} Url: {}", download_source, formatted_link);
+            println!("{}", TermStyle("Fetching locked document...").bold().yellow());
+            let response = client.get(&formatted_link).send().await?;
+            if !response.status().is_success() {
+                return Ok(false);
+            }
+            let scihub_document = Html::parse_document(&response.text().await?);
+            let link_selector = Selector::parse(selector).unwrap();
+            let link_elements = scihub_document.select(&link_selector);
+            let mut link_exists = false;
+            for element in link_elements {
+                link_exists = true;
+                let attr_value = element.value().attr(attribute).unwrap();
+                let url_to_download = match attr_value.chars().nth(0).unwrap() {
+                    '/' => {
+                        format!("{}{}", download_domain, attr_value)
+                    }
+                    _ => {
+                        attr_value.to_string()
+                    }
+                };
+                download_url(&format!("{}.pdf", index), &url_to_download, temp_directory).await?;
+                break;
+            }
+            if !link_exists {
+                return Ok(false);
+            }
+        }
+        _ => {
+            panic!("Unknown access type!");
+        }
+    }
 
-    // Get Links
-    let formatted_link = format_json_string(&format!("{}{}", base_url, doi));
-    println!("Downloading: '{}'", title);
-    println!("{:?} Url: '{}'", download_source, formatted_link);
-    println!("{}", TermStyle("Fetching document...").bold().yellow());
-    let response = client.get(&formatted_link).send().await?;
-    if !response.status().is_success() {
-        return Ok(false);
-    }
-    let scihub_document = Html::parse_document(&response.text().await?);
-    let link_selector = Selector::parse(selector).unwrap();
-    let link_elements = scihub_document.select(&link_selector);
-    let mut link_exists = false;
-    for element in link_elements {
-        link_exists = true;
-        let attr_value = element.value().attr(attribute).unwrap();
-        let url_to_download = match attr_value.chars().nth(0).unwrap() {
-            '/' => {
-                format!("{}{}", download_domain, attr_value)
-            }
-            _ => {
-                attr_value.to_string()
-            }
-        };
-        download_url(&format!("{}.pdf", index), &url_to_download, temp_directory).await?;
-        break;
-    }
-    if !link_exists {
-        return Ok(false);
-    }
     return Ok(true);
 }
 
 pub async fn download_url(file_name: &str, url: &str, directory: &std::path::Path) -> Result<(), Box<dyn std::error::Error>> {
     let response = reqwest::get(url).await?;
+
     let mut file_path = {
         File::create(directory.join(file_name))?
     };

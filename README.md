@@ -7,9 +7,9 @@
     * [SciHub (Recommended, fast)](https://sci-hub.se/)
     * [LibGen (Slow)](https://libgen.is/scimag/)
 * **💻 Download:**
-    * [⊞ Windows (5.21 MB)](https://github.com/FongYoong/ieee_journal_downloader/releases/download/0.1.0/ieee_journal_downloader.exe)
+    * [⊞ Windows (5.21 MB)](https://github.com/FongYoong/ieee_journal_downloader/releases/download/0.2.0/ieee_journal_downloader.exe)
 
-    * [🐧 Linux (10.6 MB)](https://github.com/FongYoong/ieee_journal_downloader/releases/download/0.1.0/ieee_journal_downloader_linux) .
+    * [🐧 Linux (10.6 MB)](https://github.com/FongYoong/ieee_journal_downloader/releases/download/0.2.0/ieee_journal_downloader_linux) .
 * ⚠ Possible errors:
     * Windows: If Microsoft Defender SmartScreen appears, click **More Info** and then click **Run Anyway**.
     * Linux:     If permission denied, try `chmod +x ieee_journal_downloader_linux`

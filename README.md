@@ -5,8 +5,9 @@
     * [SciHub (Recommended, fast)](https://sci-hub.se/)
     * [LibGen (Slow)](https://libgen.is/scimag/)
 * **💻 Download**
-    * [Windows (5 MB)]()
-    * [Linux (5 MB)]()
+    * [⊞ Windows (5.21 MB)](https://github.com/FongYoong/ieee_journal_downloader/releases/download/0.1.0/ieee_journal_downloader.exe)
+    * [🐧 Linux (10.6 MB)](https://github.com/FongYoong/ieee_journal_downloader/releases/download/0.1.0/ieee_journal_downloader_linux) .
+    If permission denied, try `chmod +x ieee_journal_downloader_linux`
 
 ***
 ## Usage
@@ -33,15 +34,40 @@
     ![done](https://i.imgur.com/FgNdTvn.png)
 
 ***
+## Background Info
+
+* [angular_main.js](https://github.com/FongYoong/ieee_journal_downloader/blob/master/misc/angular_main.js) contains the main Angular code of the iEEE journal website. There are plenty REST API links littered throughout the code.
+* [requests_tracking_data.txt](https://github.com/FongYoong/ieee_journal_downloader/blob/master/misc/requests_tracking_data.txt) is a list of network requests made by the IEEE journal website. The relevant requests are listed in [relevant_requests.txt](https://github.com/FongYoong/ieee_journal_downloader/blob/master/misc/relevant_requests.txt). 
+* [sample_toc_api_data.js](https://github.com/FongYoong/ieee_journal_downloader/blob/master/misc/sample_toc_api_data.js) contains a sample response returned by a POST request to [https://ieeexplore.ieee.org/rest/search/pub/8014/issue/8802299/toc](https://ieeexplore.ieee.org/rest/search/pub/8014/issue/8802299/toc)
+* As an example, the minimum required POST request headers are:
+    ```
+    Accept: application/json, text/plain, */*
+    Content-Type: application/json
+    Host: ieeexplore.ieee.org
+    Origin: https://ieeexplore.ieee.org
+    Referer: https://ieeexplore.ieee.org/xpl/tocresult.jsp?isnumber=8802299&punumber=8014
+    ```
+    whereas the request payload is:
+    ```json
+    {
+        "isnumber":"8802299",
+        "punumber":"8014",
+        "sortType":"vol-only-seq"
+    }
+    ```
+
+***
 ## Building from source
 
 1. Clone this repository 👪
     * `git clone https://github.com/FongYoong/ieee_journal_downloader.git`
 2. Install the Rust toolchains (Rustc, Rustup, Cargo).
     * [Follow instructions here](https://www.rust-lang.org/tools/install).
-3. Move into the cloned repository
+3. For Linux systems, install the following:
+    `sudo apt-get install pkg-config libssl-dev libx11-xcb-dev libxcb-render-util0-dev libxcb-shape0-dev libxcb-xfixes0-dev`
+4. Move into the cloned repository
     * `cd ieee_journal_downloader`
-4. Build! 🔨
+5. Build! 🔨
     * `cargo build --release`
     or
     * `cargo run --release`

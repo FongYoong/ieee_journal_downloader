@@ -70,7 +70,13 @@
         "sortType":"vol-only-seq"
     }
     ```
-* [sample_metadata_api_data.json](https://github.com/FongYoong/ieee_journal_downloader/blob/master/misc/sample_metadata_api_data.json) contains a sample response returned by a POST request to [https://ieeexplore.ieee.org/rest/publication/home/metadata?issueid=4381235](https://ieeexplore.ieee.org/rest/publication/home/metadata?issueid=4381235). This metadata is fetched if the user-specified URL does not contain a publication number.
+* [sample_metadata_api_data.json](https://github.com/FongYoong/ieee_journal_downloader/blob/master/misc/sample_metadata_api_data.json) contains a sample response returned by a GET request to [https://ieeexplore.ieee.org/rest/publication/home/metadata?issueid=4381235](https://ieeexplore.ieee.org/rest/publication/home/metadata?issueid=4381235). This metadata is fetched if the user-specified URL does not contain a publication number. The headers should be:
+    ```
+    Accept: application/json, text/plain, */*
+    Content-Type: application/json
+    Host: ieeexplore.ieee.org
+    Origin: https://ieeexplore.ieee.org
+    ```
 
 ***
 ## Building from source

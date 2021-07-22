@@ -14,6 +14,8 @@
 * ⚠ Possible errors:
     * Windows: If Microsoft Defender SmartScreen appears, click **More Info** and then click **Run Anyway**.
     * Linux:     If permission denied, try `chmod +x ieee_journal_downloader_linux`
+* 🐛 Possible bugs:
+    * The PDF merging process has some bugs and the page order may get mixed up in some cases. Due to time constraints, I may not fix this anytime soon as I'm more interested in the separate documents.
 
 ***
 ## Usage

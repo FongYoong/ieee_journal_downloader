@@ -22,31 +22,38 @@
 
 2) Identify the **IEEE journal link**.
     Sample link: [https://ieeexplore.ieee.org/xpl/tocresult.jsp?isnumber=8802299&punumber=8014](https://ieeexplore.ieee.org/xpl/tocresult.jsp?isnumber=8802299&punumber=8014)
+
     ![get_link](https://i.imgur.com/MWBQCRX.png)
 
 3) Specify the journal link manually or from the clipboard:
+
     ![specify_link](https://i.imgur.com/FxGNVUg.png)
 
 4) Select the download domain:
+
     ![domain](https://i.imgur.com/KK9N6ly.png)
 
 5) Wait for the documents to be fetched:
+
     ![fetch](https://i.imgur.com/kHrtfAY.png)
 
 6) After downloading a couple of documents, the program will wait for 60 seconds to avoid any human captchas:
+
     ![captcha](https://i.imgur.com/AZjamsg.png)
 
 7) The merged PDF will be stored in the folder **pdf_output** relative to the program's location:
+
     ![done](https://i.imgur.com/FgNdTvn.png)
 
 8) Some journals, especially very recent ones, may not be available:
+
     ![fail](https://i.imgur.com/R3ETv3Y.png)
 ***
 ## Background Info
 
 * [angular_main.js](https://github.com/FongYoong/ieee_journal_downloader/blob/master/misc/angular_main.js) contains the main Angular code of the iEEE journal website. There are plenty REST API links littered throughout the code.
 * [requests_tracking_data.txt](https://github.com/FongYoong/ieee_journal_downloader/blob/master/misc/requests_tracking_data.txt) is a list of network requests made by the IEEE journal website. The relevant requests are listed in [relevant_requests.txt](https://github.com/FongYoong/ieee_journal_downloader/blob/master/misc/relevant_requests.txt). 
-* [sample_toc_api_data.js](https://github.com/FongYoong/ieee_journal_downloader/blob/master/misc/sample_toc_api_data.json) contains a sample response returned by a POST request to [https://ieeexplore.ieee.org/rest/search/pub/8014/issue/8802299/toc](https://ieeexplore.ieee.org/rest/search/pub/8014/issue/8802299/toc). This response is used to identify the journal's documents.
+* [sample_toc_api_data.json](https://github.com/FongYoong/ieee_journal_downloader/blob/master/misc/sample_toc_api_data.json) contains a sample response returned by a POST request to [https://ieeexplore.ieee.org/rest/search/pub/8014/issue/8802299/toc](https://ieeexplore.ieee.org/rest/search/pub/8014/issue/8802299/toc). This response is used to identify the journal's documents.
 * As an example, the minimum required POST request headers are:
     ```
     Accept: application/json, text/plain, */*
@@ -63,7 +70,7 @@
         "sortType":"vol-only-seq"
     }
     ```
-* [sample_toc_api_data.js](https://github.com/FongYoong/ieee_journal_downloader/blob/master/misc/sample_metadata_api_data.json) contains a sample response returned by a POST request to [https://ieeexplore.ieee.org/rest/publication/home/metadata?issueid=4381235](https://ieeexplore.ieee.org/rest/publication/home/metadata?issueid=4381235). This metadata is fetched if the user-specified URL does not contain a publication number.
+* [sample_metadata_api_data.json](https://github.com/FongYoong/ieee_journal_downloader/blob/master/misc/sample_metadata_api_data.json) contains a sample response returned by a POST request to [https://ieeexplore.ieee.org/rest/publication/home/metadata?issueid=4381235](https://ieeexplore.ieee.org/rest/publication/home/metadata?issueid=4381235). This metadata is fetched if the user-specified URL does not contain a publication number.
 
 ***
 ## Building from source

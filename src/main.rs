@@ -10,8 +10,9 @@ pub struct RecordStore {
     records: Vec<Value>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum DownloadSource {
+    IEEE,
     SCIHUB,
     LIBGEN,
 }
@@ -24,7 +25,7 @@ use std::cmp::min;
 use std::fs;
 //use tempdir::TempDir;
 
-use reqwest::Url;
+use reqwest::{Client, Url};
 use indicatif::{ProgressBar, ProgressStyle};
 use clipboard::ClipboardProvider;
 use clipboard::ClipboardContext;
@@ -42,7 +43,7 @@ use console::style as TermStyle;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let term = Term::stdout();
     term.set_title("IEEE Journal Downloader");
-
+    let client = Client::new();
     loop {
         term.clear_screen()?;
         let mut journal_url = get_url();
@@ -50,9 +51,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let ieee_isnumber;
         loop {
             match parse_url(&journal_url) {
-                Ok((a, b)) => {
-                    ieee_punumber = a;
-                    ieee_isnumber = b;
+                Ok((punumber, isnumber)) => {
+                    if punumber.is_empty() {
+                        match get_publication_number(&client, &isnumber).await {
+                            Ok(fetched_punumber) => {
+                                ieee_punumber = fetched_punumber;
+                            }
+                            Err(_) => {
+                                panic!("Failed to obtain publication number!");
+                            }
+                        }
+                    }
+                    else {
+                        ieee_punumber = punumber;
+                    }
+                    ieee_isnumber = isnumber;
                     break;
                 }
                 Err(_) => {
@@ -70,7 +83,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("{}", TermStyle("Fetching metadata...").bold().yellow());
 
         // Get Records
-        let client = reqwest::Client::new();
         let record_store = get_record_store(&client, &journal_url, &ieee_punumber, &ieee_isnumber).await.unwrap();
         let sample_record = &record_store.records[0];
         term.clear_screen()?;
@@ -107,7 +119,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         
         // pdf_helper::merge_documents(&mut documents, &output_directory_name, &output_file_name)
         // pdf_helper::merge_documents(&mut documents, "pdf_output", "test.pdf")
-        // https://ieeexplore.ieee.org/xpl/tocresult.jsp?isnumber=9340528&punumber=8475037
         if pdf_helper::merge_documents(&mut documents, &output_directory_name, &output_file_name) {
             println!("\n{}", TermStyle("Success!").bold().green());
             println!("\n{}", TermStyle(format!("File saved to: {}/{}",
@@ -194,29 +205,26 @@ pub fn parse_url(url: &str) -> Result<(String, String), ()> {
     };
     match url_object.query() {
         Some(query_string) => {
-
             let queries = query_string.split("&").collect::<Vec<&str>>();
             if queries.len() == 0 {
                 return Err(());
             }
             let mut punumber = "";
             let mut isnumber = "";
-            let mut has_punumber = false;
             let mut has_isnumber = false;
 
             for query in queries {
                 let values = query.split("=").collect::<Vec<&str>>();
                 if values[0] == "punumber" {
-                    has_punumber = true;
                     punumber = values[1];
                 }
                 else if values[0] == "isnumber" {
                     has_isnumber = true;
                     isnumber = values[1];
                 }
-                if has_punumber && has_isnumber {
-                    return Ok((punumber.to_string(), isnumber.to_string()));
-                }
+            }
+            if has_isnumber {
+                return Ok((punumber.to_string(), isnumber.to_string()));
             }
         },
         _ => {
@@ -225,6 +233,25 @@ pub fn parse_url(url: &str) -> Result<(String, String), ()> {
         }
     };
     return Err(());
+}
+
+pub async fn get_publication_number(client: &reqwest::Client, issue_number: &str) -> Result<String, Box<dyn std::error::Error>> {
+    // "https://ieeexplore.ieee.org/rest/publication/home/metadata?issueid=4381235"
+    let metadata_url = format!("https://ieeexplore.ieee.org/rest/publication/home/metadata?issueid={}", issue_number);
+
+    let response = client
+        .get(metadata_url)
+        .header("Accept", "application/json, text/plain, */*")
+        .header("Content-Type", "application/json")
+        .header("Host", "ieeexplore.ieee.org")
+        .header("Origin", "https://ieeexplore.ieee.org")
+        .send()
+        .await?;
+    let response_raw_data = response.text().await?;
+    let response_json_data : Value = serde_json::from_str(&response_raw_data)?;
+    let pub_number = format_json_string(&format!("{}",response_json_data["publicationNumber"]));
+    Ok(pub_number)
+    
 }
 
 pub fn get_download_source() -> DownloadSource {
@@ -279,10 +306,10 @@ pub async fn get_record_store(client: &reqwest::Client, journal_url: &str, ieee_
     Ok(record_store)
 }
 
-pub async fn download_documents(term: &Term, client: &reqwest::Client, download_source: &DownloadSource, record_store: &RecordStore, temp_directory: &std::path::Path) -> Result<(), Box<dyn std::error::Error>> {
+pub async fn download_documents(term: &Term, client: &reqwest::Client, download_source: &DownloadSource, record_store: &RecordStore, output_directory: &std::path::Path) -> Result<(), Box<dyn std::error::Error>> {
     for (index, record) in record_store.records.iter().enumerate() {
         println!("{}", TermStyle(format!("[{}/{}]", index + 1, record_store.records.len())).bold());
-        let status = get_download_url(&client, &download_source, &temp_directory, &index, record).await?;
+        let status = get_download_url(&client, &download_source, &output_directory, &index, record).await?;
         if !status {
             println!("{}", TermStyle(format!("{} Failed!", Emoji("❌", ":("))).bold().red());
         }
@@ -298,78 +325,86 @@ pub async fn download_documents(term: &Term, client: &reqwest::Client, download_
     Ok(())
 }
 
-pub async fn get_download_url(client: &reqwest::Client, download_source: &DownloadSource, temp_directory: &std::path::Path, index: &usize, record: &Value) -> Result<bool, Box<dyn std::error::Error>> {
+pub async fn get_download_url(client: &reqwest::Client, user_download_source: &DownloadSource, output_directory: &std::path::Path, index: &usize, record: &Value) -> Result<bool, Box<dyn std::error::Error>> {
     let title = &record["articleTitle"].to_string();
     let access_type = &format_json_string(&record["accessType"]["type"].to_string()); // ephemera, locked
     println!("Downloading: {}", title);
-    match access_type.as_str() {
+
+    let preferred_source =  match access_type.as_str() {
         "ephemera" | "open-access" => {
-            // Free
-            let url_to_download = format_json_string(
-                &format!("https://ieeexplore.ieee.org/ielx7/{}/{}/{}.pdf",
-                &record["publicationNumber"].to_string(),
-                &record["isNumber"].to_string(),
-                &format!("0{}", record["articleNumber"].to_string()),
-            ));
-            println!("{:?} Url: {}", download_source, url_to_download);
-            println!("{}", TermStyle("Fetching free document...").bold().yellow());
-            download_url(&format!("{}.pdf", index), &url_to_download, temp_directory).await?;
-        },
+            &DownloadSource::IEEE
+        }
         "locked" => {
-            let base_request_url = match download_source {
-                DownloadSource::SCIHUB=>"https://sci-hub.do/",
-                DownloadSource::LIBGEN=>"http://libgen.gs/scimag/ads.php?doi="
-            };
-        
-            let selector = match download_source {
-                DownloadSource::SCIHUB=>"iframe",
-                DownloadSource::LIBGEN=>"a"
-            };
-        
-            let attribute = match download_source {
-                DownloadSource::SCIHUB=>"src",
-                DownloadSource::LIBGEN=>"href"
-            };
-        
-            let download_domain = match download_source {
-                DownloadSource::SCIHUB=>"http:",
-                DownloadSource::LIBGEN=>"http://libgen.gs"
-            };
-        
-            let formatted_link = format_json_string(&format!("{}{}", base_request_url, record["doi"].to_string()));
-            println!("{:?} Url: {}", download_source, formatted_link);
-            println!("{}", TermStyle("Fetching locked document...").bold().yellow());
-            let response = client.get(&formatted_link).send().await?;
-            if !response.status().is_success() {
-                return Ok(false);
-            }
-            let scihub_document = Html::parse_document(&response.text().await?);
-            let link_selector = Selector::parse(selector).unwrap();
-            let link_elements = scihub_document.select(&link_selector);
-            let mut link_exists = false;
-            for element in link_elements {
-                link_exists = true;
-                let attr_value = element.value().attr(attribute).unwrap();
-                let url_to_download = match attr_value.chars().nth(0).unwrap() {
-                    '/' => {
-                        format!("{}{}", download_domain, attr_value)
-                    }
-                    _ => {
-                        attr_value.to_string()
-                    }
-                };
-                download_url(&format!("{}.pdf", index), &url_to_download, temp_directory).await?;
-                break;
-            }
-            if !link_exists {
-                return Ok(false);
-            }
+            user_download_source
         }
         _ => {
             panic!("Unknown access type!");
         }
-    }
+    };
 
+    let formatted_link = format_json_string(& match preferred_source {
+        DownloadSource::IEEE => {
+            format!("https://ieeexplore.ieee.org{}", record["pdfLink"].to_string())
+        },
+        DownloadSource::SCIHUB => format!("https://sci-hub.do/{}", record["doi"].to_string()),
+        DownloadSource::LIBGEN =>  format!("http://libgen.gs/scimag/ads.php?doi={}", record["doi"].to_string()),
+    });
+
+    let selector = match preferred_source {
+        DownloadSource::IEEE | DownloadSource::SCIHUB => "iframe",
+        DownloadSource::LIBGEN => "a"
+    };
+
+    let attribute = match preferred_source {
+        DownloadSource::IEEE | DownloadSource::SCIHUB => "src",
+        DownloadSource::LIBGEN => "href"
+    };
+
+    let download_domain = match preferred_source {
+        DownloadSource::IEEE =>  "",
+        DownloadSource::SCIHUB => "http:",
+        DownloadSource::LIBGEN => "http://libgen.gs"
+    };
+
+    println!("{:?} Url: {}", preferred_source, formatted_link);
+    println!("{}", TermStyle(format!("Fetching {} document...", match preferred_source {
+        DownloadSource::IEEE => "free",
+        DownloadSource::SCIHUB | DownloadSource::LIBGEN => "locked"
+    })).bold().yellow());
+    let mut request = client.get(&formatted_link);
+    if *preferred_source == DownloadSource::IEEE {
+        request = request
+        .header("Accept", "application/json, text/plain, */*")
+        .header("Content-Type", "application/json")
+        .header("Host", "ieeexplore.ieee.org")
+        .header("Origin", "https://ieeexplore.ieee.org")
+        .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0")
+    }
+    let response = request.send().await?;
+    if !response.status().is_success() {
+        return Ok(false);
+    }
+    let scihub_document = Html::parse_document(&response.text().await?);
+    let link_selector = Selector::parse(selector).unwrap();
+    let link_elements = scihub_document.select(&link_selector);
+    let mut link_exists = false;
+    for element in link_elements {
+        link_exists = true;
+        let attr_value = element.value().attr(attribute).unwrap();
+        let url_to_download = match attr_value.chars().nth(0).unwrap() {
+            '/' => {
+                format!("{}{}", download_domain, attr_value)
+            }
+            _ => {
+                attr_value.to_string()
+            }
+        };
+        download_url(&format!("{}.pdf", index), &url_to_download, output_directory).await?;
+        break;
+    }
+    if !link_exists {
+        return Ok(false);
+    }
     return Ok(true);
 }
 

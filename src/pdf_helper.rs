@@ -9,7 +9,14 @@ pub fn get_documents(directory: &std::path::Path) -> Vec<Document> {
     file_paths.sort_by(|a, b| compare(&a.display().to_string(), &b.display().to_string()));
     let mut documents : Vec<Document> = vec![];
     for path in file_paths {
-        documents.push(Document::load(path).unwrap());
+        match Document::load(path) {
+            Ok(doc) => {
+                documents.push(doc);
+            }
+            Err(_) => {
+                panic!("Failed to read document!");
+            }
+        }
     }
     return documents;
 }

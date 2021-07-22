@@ -1,0 +1,68 @@
+{
+    "issns": [{
+        "format": "Electronic ISSN",
+        "value": "1558-1500"
+    }, {
+        "format": "Print ISSN",
+        "value": "0361-1434"
+    }],
+    "frequency": "4",
+    "aimsAndScope": "<p>The IEEE Transactions on Professional Communication is a peer-reviewed journal devoted to applied research on professional communication&mdash;including but not limited to technical and business communication. Papers should address the research interests and needs of technical communicators, engineers, scientists, information designers, editors, linguists, translators, managers, business professionals, and others from around the globe who practice, conduct research on, and teach others about effective professional communication.<br />\r\n<br />\r\nThe Transactions publishes original, empirical research that addresses one of these contexts:</p>\r\n\r\n<ul>\r\n\t<li>The communication practices of technical professionals, such as engineers and scientists</li>\r\n\t<li>The practices of professional communicators who work in technical or business environments</li>\r\n\t<li>Evidence-based methods for teaching and practicing professional and technical communication<br />\r\n\t&nbsp;</li>\r\n</ul>\r\n\r\n<p>&nbsp;</p>\r\n",
+    "coverImage": "<img src='/ielx5/47/6357293/6357293.jpg 'width='110' height='150'  alt='IEEE Transactions on Professional Communication' class='cover' />",
+    "coverImagePath": "/ielx5/47/6357293/6357293.jpg",
+    "societyImage": "<img src='/xploreAssets/images/cms/49d9195a-fdb7-4686-a4bf-d7a8c4e8469947_society_logo.jpg ' class='fullsize' />",
+    "societyImagePath": "/xploreAssets/images/cms/49d9195a-fdb7-4686-a4bf-d7a8c4e8469947_society_logo.jpg",
+    "impactFactor": "0.771",
+    "contentId": 211,
+    "citeScore": "2.8",
+    "articleInfluenceMetricScore": "0.268",
+    "eigenFactorScore": "0.00032",
+    "shortAimsAndScope": "<p>The IEEE Transactions on Professional Communication is a peer-reviewed journal devoted to applied research on professional communication--including but not limited to technical and business communication. It has been published since 1957 by the Professional Communication Society of the Institute of Electrical and Electronics Engineers (IEEE).</p>\r\n\r\n<p><em>The articles in this journal are peer reviewed in accordance with the requirements set forth in the&nbsp;</em><em><a href=\"https://pspb.ieee.org/images/files/files/opsmanual.pdf\" target=\"_blank\">IEEE PSPB Operations Manual</a></em>&nbsp;<em>(sections 8.2.1.C &amp; 8.2.2.A). Each published article was reviewed by a minimum of two independent reviewers using a double-blind peer review process, where the identities of the reviewers are not known to the authors, and the identities of the authors are not known to the reviewers.</em></p>\r\n\r\n<p><em>Corresponding authors from low-income countries are eligible for <a href=\"https://open.ieee.org/index.php/about-ieee-open-access/faqs/#waivers \">waived or reduced open access APCs</a></em>.</p>\r\n",
+    "submitManuscriptLink": "https://procomm.ieee.org/transactions-of-professional-communication/for-prospective-authors/guidelines-to-follow/ ",
+    "publicationDetailsLink": "<p><strong>Publishing Policies</strong></p>\r\n\r\n<p>This publication considers original works that enhance the existing body of knowledge. Results described in the article should not have been submitted or published elsewhere. Expanded versions of conference publications may be submitted. Articles must be intelligible and must be written in standard English.</p>\r\n\r\n<p><em>Peer Review</em>: Peer review is vital to the quality of published research. Each article submitted to IEEE is evaluated by at least two independent reviewers selected by a member of the publication&#39;s editorial board.&nbsp;<a href=\"https://journals.ieeeauthorcenter.ieee.org/submit-your-article-for-peer-review/about-the-peer-review-process/\">Learn more about the IEEE peer review process</a>.</p>\r\n\r\n<p><em>Publication Fees</em>: This publication is supported by subscriptions and applicable Article Processing Charges (APCs). Although there is no cost for publishing with IEEE, authors may wish to take advantage of some of our fee-based offerings; visit the&nbsp;<a href=\"https://journals.ieeeauthorcenter.ieee.org/your-role-in-article-production/about-potential-article-processing-charges/\">IEEE Author Center</a>&nbsp;for more information on available options.</p>\r\n\r\n<p><em>Errors in Published Articles</em>: Authors who have detected an error in their published article should contact the Editor-in-Chief shown above to request the publication of a correction. Note that no change may be made to the original article after it is published in IEEE&nbsp;<em>Xplore</em>.</p>\r\n\r\n<p><em>Other Policies</em>:</p>\r\n\r\n<ul>\r\n\t<li><a href=\"https://ieeexplore.ieee.org/Xplorehelp/author-center/publishing-policies#publishing-ethics\">Publishing Ethics</a></li>\r\n\t<li><a href=\"https://ieeexplore.ieee.org/Xplorehelp/author-center/publishing-policies#copyright-and-licensing-ieee-copyright-form\">Copyright and Licensing</a></li>\r\n\t<li><a href=\"https://ieeexplore.ieee.org/Xplorehelp/author-center/publishing-policies#post-publication-information\">Post-Publication Information</a></li>\r\n\t<li><a href=\"https://ieeexplore.ieee.org/Xplorehelp/author-center/publishing-policies#advertising\">Advertising</a></li>\r\n</ul>\r\n\r\n<p><strong>Information</strong></p>\r\n\r\n<ul>\r\n\t<li><a href=\"https://procomm.ieee.org/transactions-of-professional-communication/\">IEEE Transactions on Professional Communication</a></li>\r\n\t<li><a href=\"https://procomm.ieee.org/transactions-of-professional-communication/for-prospective-authors/guidelines-to-follow/\">Information for Authors</a></li>\r\n\t<li><a href=\"https://procomm.ieee.org/wp-content/uploads/2020/03/EditorialBoard2020.pdf\">Editorial Board</a></li>\r\n</ul>\r\n\r\n<p><strong>Sponsored by</strong></p>\r\n\r\n<ul>\r\n\t<li><a href=\"https://procomm.ieee.org\">IEEE Professional Communication Society</a></li>\r\n</ul>\r\n\r\n<p><strong>Editor-in-Chief</strong><br />\r\nGeorge F. Hayhoe<br />\r\nMercer University School of Eng.<br />\r\nFletcher, NC 28732, USA<br />\r\nEmail: <a href=\"mailto:hayhoe_g@mercer.edu\">hayhoe_g@mercer.edu</a></p>\r\n\r\n<p>&nbsp;</p>\r\n",
+    "publicationSponsorSocietyUrl": "<ul>\r\n\t<li><a href=\"  https://procomm.ieee.org\">IEEE Professional Communication Society</a></li>\r\n</ul>\r\n",
+    "publicationEicDetailsOne": "<p><strong>Editor-in-Chief</strong><br />\r\nGeorge F. Hayhoe <a href=\"https://orcid.org/0000-0002-6855-5905\"><img src=\"/Xplorehelp/img/orcid_icon.png\" /> </a></p>\r\n\r\n<p>Mercer University School of Engineering</p>\r\n\r\n<p>Fletcher, NC 28732, USA</p>\r\n\r\n<p>Email:&nbsp;<a href=\"mailto:hayhoe_g@mercer.edu\">hayhoe_g@mercer.edu</a></p>\r\n\r\n<p>&nbsp;</p>\r\n\r\n<p>&nbsp;</p>\r\n",
+    "authorDigitalToolBoxLink": "http://ieeeauthorcenter.ieee.org/",
+    "openAccessPublishingOptions": "http://open.ieee.org",
+    "additionalInfoForJournal": "#",
+    "becomeReviewerUrl": "http://ieeeauthorcenter.ieee.org/submit-your-article-for-peer-review/about-the-peer-review-process/",
+    "submissionGuidelinesLink": "http://ieeeauthorcenter.ieee.org/submit-your-article-for-peer-review/the-ieee-article-submission-process/",
+    "coverImageAttrs": "width='110' height='150'  alt='IEEE Transactions on Professional Communication' class='cover' ",
+    "showSpecialSections": false,
+    "showSocietySections": false,
+    "showPopular": true,
+    "publisher": "IEEE",
+    "displayTitle": "IEEE Transactions on Professional Communication",
+    "doiLink": "https://doi.org/10.1109/TPC.47",
+    "partNumVendorUrlMediaType": ["", "", ""],
+    "coverImageHtml": "<img src='/ielx5/47/6357293/6357293.jpg 'width='110' height='150'  alt='IEEE Transactions on Professional Communication' class='cover' />",
+    "bmsProductNumber": "",
+    "parentPublicationNumber": "47",
+    "publicationYear": "1972",
+    "publicationNumber": "47",
+    "contentType": "Journals",
+    "relatedJournal": "5,6287639,6",
+    "preprintIssue": {
+        "volume": "PP",
+        "issue": "99",
+        "issueNumber": 5291744
+    },
+    "isMegaJournal": false,
+    "isVolumeOnlyJrnl": false,
+    "pubTopics": [{
+        "name": "General Topics for Engineers"
+    }, {
+        "name": "Engineering Profession"
+    }],
+    "isOpenAccess": false,
+    "publicationDoi": "10.1109/TPC.47",
+    "isVJ": false,
+    "currentIssue": {
+        "publicationDateAsStr": "June, 2021",
+        "volume": "64",
+        "issue": "2",
+        "issueNumber": 9439986,
+        "year": "2021",
+        "month": "June"
+    }
+}

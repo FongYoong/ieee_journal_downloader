@@ -52,7 +52,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
              get_url()
         }
         else {
-            command_args[1].clone()
+            format_json_string(&command_args[1])
         };
         let ieee_punumber;
         let ieee_isnumber;

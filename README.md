@@ -33,10 +33,13 @@
 
     Alternatively, the link can be specified as an argument when you start the program from the terminal:
     ```bash
-    // Linux
-    ./ieee_journal_downloader your_link_here
-    // Windows
-    ieee_journal_downloader.exe your_link_here
+    # Linux
+    ./ieee_journal_downloader "your_link_here"
+    ./ieee_journal_downloader "https://ieeexplore.ieee.org/xpl/tocresult.jsp?isnumber=9340528&punumber=8475037"
+
+    # Windows
+    ieee_journal_downloader.exe "your_link_here"
+    ieee_journal_downloader.exe "https://ieeexplore.ieee.org/xpl/tocresult.jsp?isnumber=9340528&punumber=8475037"
     ```
 
 4) Select the download domain:

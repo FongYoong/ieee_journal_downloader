@@ -23,6 +23,7 @@ use std::io::Write;
 use futures_util::StreamExt;
 use std::cmp::min;
 use std::fs;
+use std::path;
 //use tempdir::TempDir;
 
 use reqwest::{Client, Url};
@@ -44,9 +45,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let term = Term::stdout();
     term.set_title("IEEE Journal Downloader");
     let client = Client::new();
+    let mut command_args: Vec<String> = std::env::args().collect();
     loop {
         term.clear_screen()?;
-        let mut journal_url = get_url();
+        let mut journal_url = if command_args.len() < 2 {
+             get_url()
+        }
+        else {
+            command_args[1].clone()
+        };
         let ieee_punumber;
         let ieee_isnumber;
         loop {
@@ -99,9 +106,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let publication_name = &sample_record["publicationTitle"];
         let issue_name = format!("Volume_{}_Issue_{}", sample_record["volume"], sample_record["issue"]);
         let output_directory_name = format_json_string(&format!("pdf_output/{}/{}", publication_name, issue_name));
+        let error_file_name = format!("{}/error_log.txt", output_directory_name);
+        utils::write_to_file(&error_file_name, "");
         let output_file_name = format_json_string(&format!("{}.pdf", issue_name));
         let output_separate_path_string = format!("{}/separate/", output_directory_name);
-        let output_separate_path = std::path::Path::new(output_separate_path_string.as_str());
+        let output_separate_path = path::Path::new(output_separate_path_string.as_str());
         match fs::create_dir_all(&output_separate_path_string) {
             Err(_) => {
                 println!("Failed to create directory!")
@@ -110,11 +119,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     
             }
         };
-        download_documents(&term, &client, &download_source, &record_store, output_separate_path).await.unwrap();
+        download_documents(&term, &client, &download_source, &record_store, output_separate_path, &error_file_name).await.unwrap();
 
         // Merge PDFs
         println!("{}", TermStyle("Merging Documents...").bold().yellow());
-        //let mut documents = pdf_helper::get_documents(std::path::Path::new("pdf_source"));
+        //let mut documents = pdf_helper::get_documents(path::Path::new("pdf_source"));
         let mut documents = pdf_helper::get_documents(output_separate_path);
         
         // pdf_helper::merge_documents(&mut documents, &output_directory_name, &output_file_name)
@@ -136,6 +145,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             thread::sleep(time::Duration::from_millis(1000));
             break;
         }
+        command_args.pop();
     }
     Ok(())
 }
@@ -306,12 +316,16 @@ pub async fn get_record_store(client: &reqwest::Client, journal_url: &str, ieee_
     Ok(record_store)
 }
 
-pub async fn download_documents(term: &Term, client: &reqwest::Client, download_source: &DownloadSource, record_store: &RecordStore, output_directory: &std::path::Path) -> Result<(), Box<dyn std::error::Error>> {
+pub async fn download_documents(term: &Term, client: &reqwest::Client, download_source: &DownloadSource, record_store: &RecordStore, output_directory: &path::Path, error_file_name: &str) -> Result<(), Box<dyn std::error::Error>> {
     for (index, record) in record_store.records.iter().enumerate() {
         println!("{}", TermStyle(format!("[{}/{}]", index + 1, record_store.records.len())).bold());
         let status = get_download_url(&client, &download_source, &output_directory, &index, record).await?;
         if !status {
             println!("{}", TermStyle(format!("{} Failed!", Emoji("❌", ":("))).bold().red());
+            // &record["articleTitle"].to_string();
+            let error_log = format_json_string(&format!("Index: {}\nTitle: {}\nDOI: {}\nIEEE Link: https://ieeexplore.ieee.org{}\n\n",
+            index, &record["articleTitle"], &record["doi"], &record["htmlLink"]));
+            utils::append_to_file(error_file_name, &error_log);
         }
         utils::print_divider(&term);
         if index > 0 && index % 9 == 0 {
@@ -325,9 +339,9 @@ pub async fn download_documents(term: &Term, client: &reqwest::Client, download_
     Ok(())
 }
 
-pub async fn get_download_url(client: &reqwest::Client, user_download_source: &DownloadSource, output_directory: &std::path::Path, index: &usize, record: &Value) -> Result<bool, Box<dyn std::error::Error>> {
+pub async fn get_download_url(client: &reqwest::Client, user_download_source: &DownloadSource, output_directory: &path::Path, index: &usize, record: &Value) -> Result<bool, Box<dyn std::error::Error>> {
     let title = &record["articleTitle"].to_string();
-    let access_type = &format_json_string(&record["accessType"]["type"].to_string()); // ephemera, locked
+    let access_type = &format_json_string(&record["accessType"]["type"].to_string()); // ephemera, open-access, locked
     println!("Downloading: {}", title);
 
     let preferred_source =  match access_type.as_str() {
@@ -408,7 +422,7 @@ pub async fn get_download_url(client: &reqwest::Client, user_download_source: &D
     return Ok(true);
 }
 
-pub async fn download_url(file_name: &str, url: &str, directory: &std::path::Path) -> Result<(), Box<dyn std::error::Error>> {
+pub async fn download_url(file_name: &str, url: &str, directory: &path::Path) -> Result<(), Box<dyn std::error::Error>> {
     let response = reqwest::get(url).await?;
 
     let mut file_path = {

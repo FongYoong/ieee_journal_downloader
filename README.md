@@ -8,9 +8,9 @@
     * [SciHub (Recommended, fast)](https://sci-hub.se/)
     * [LibGen (Slow)](https://libgen.is/scimag/)
 * **💻 Download:**
-    * [⊞ Windows (5.24 MB)](https://github.com/FongYoong/ieee_journal_downloader/releases/download/0.3.0/ieee_journal_downloader.exe)
+    * [⊞ Windows (5.24 MB)](https://github.com/FongYoong/ieee_journal_downloader/releases/download/0.4.0/ieee_journal_downloader.exe)
 
-    * [🐧 Linux (10.64 MB)](https://github.com/FongYoong/ieee_journal_downloader/releases/download/0.3.0/ieee_journal_downloader_linux) .
+    * [🐧 Linux (10.64 MB)](https://github.com/FongYoong/ieee_journal_downloader/releases/download/0.4.0/ieee_journal_downloader_linux) .
 * ⚠ Possible errors:
     * Windows: If Microsoft Defender SmartScreen appears, click **More Info** and then click **Run Anyway**.
     * Linux:     If permission denied, try `chmod +x ieee_journal_downloader_linux`
@@ -20,16 +20,24 @@
 ***
 ## Usage
 
-1) Double click on the file or invoke it from the command line.
-
-2) Identify the **IEEE journal link**.
+1) Identify the **IEEE journal link**.
     Sample link: [https://ieeexplore.ieee.org/xpl/tocresult.jsp?isnumber=8802299&punumber=8014](https://ieeexplore.ieee.org/xpl/tocresult.jsp?isnumber=8802299&punumber=8014)
 
     ![get_link](https://i.imgur.com/MWBQCRX.png)
 
+2) Double click on the program or invoke it from the command line.
+
 3) Specify the journal link manually or from the clipboard:
 
     ![specify_link](https://i.imgur.com/FxGNVUg.png)
+
+    Alternatively, the link can be specified as an argument when you start the program from the terminal:
+    ```bash
+    // Linux
+    ./ieee_journal_downloader your_link_here
+    // Windows
+    ieee_journal_downloader.exe your_link_here
+    ```
 
 4) Select the download domain:
 
